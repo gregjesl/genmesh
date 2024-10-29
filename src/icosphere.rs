@@ -1,9 +1,13 @@
 //! Icosahedral sphere
 
 use std::collections::HashMap;
+use std::default;
+use std::f32::consts::PI;
+use std::io::empty;
 
 use crate::generators::{IndexedPolygon, SharedVertex};
-use crate::{math::Vector3, Triangle, Vertex};
+use crate::{Position, Triangulate};
+use crate::{math::Vector3, Triangle, Vertex, Barycenter};
 
 /// Icosahedral sphere with radius 1, centered at (0., 0., 0.).
 #[derive(Clone, Debug)]
@@ -70,6 +74,10 @@ const FACES: [[usize; 3]; 20] = [
     [9, 8, 1],
 ];
 
+fn dot_pos(a: Position, b: Position) -> f32 {
+    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+}
+
 impl IcoSphere {
     /// Creates a unit sphere with 20 faces and 12 vertices.
     pub fn new() -> Self {
@@ -101,6 +109,25 @@ impl IcoSphere {
             vertices,
             faces,
         }
+    }
+
+    /// Returns all faces within a spherical circle
+    pub fn spherical_circle(self, center: Position, angle_deg: f32) -> Vec<Triangle<Vertex>> {
+        let mut result = Vec::<Triangle<Vertex>>::default();
+        let center_mag = dot_pos(center, center).sqrt();
+        if center_mag == 0_f32 {
+            panic!("Center position has zero length");
+        }
+        for face in self.triangulate() {
+            let barycenter = face.barycenter();
+            let barycenter_mag = dot_pos(barycenter, barycenter).sqrt();
+            let cos_angle = dot_pos(center, barycenter)
+                / (center_mag * barycenter_mag);
+            if cos_angle.acos() * 180_f32 / PI < angle_deg {
+                result.push(face);
+            }
+        }
+        return result;
     }
 
     fn vert(&self, index: usize) -> Vertex {
