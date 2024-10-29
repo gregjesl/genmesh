@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 use std::marker::PhantomData;
+use std::ops::{Add, AddAssign, Div, DivAssign};
+use std::process::Output;
 
 /// A polygon with 4 points. Maps to `GL_QUADS`.
 #[derive(Clone, Debug, PartialEq, Eq, Copy)]
@@ -455,5 +457,25 @@ where
 
             self.source.next()?.emit_lines(|v| self.buffer.push_back(v));
         }
+    }
+}
+
+/// Supplies a way to compute the barycenter of a polygon
+pub trait Barycenter<T> 
+{
+    /// Computes the barycenter of a polygon
+    fn barycenter(self) -> T;
+}
+
+impl<T> Barycenter<T> for Triangle<T> 
+where
+    T: Copy + AddAssign + DivAssign<i32>,
+{
+    fn barycenter(self) -> T {
+        let mut result = self.x;
+        result += self.y;
+        result += self.z;
+        result /= 3;
+        return result;
     }
 }

@@ -17,7 +17,7 @@
 
 pub use poly::{
     EmitLines, EmitVertices, Line, Lines, LinesIterator, MapToVertices, MapToVerticesIter,
-    MapVertex, Polygon, Quad, Triangle, Vertices, VerticesIterator,
+    MapVertex, Polygon, Quad, Triangle, Vertices, VerticesIterator,Barycenter
 };
 
 pub use triangulate::{EmitTriangles, Triangulate, TriangulateIterator};
